@@ -73,8 +73,9 @@ class _HomeState extends State<Home> {
             await googleSignIn.authenticatedClient();
 
         final dir = await getApplicationDocumentsDirectory();
-        await isar.copyToFile("${dir.path}/db_backup.isar");
+
         fa.File file = fa.File("${dir.path}/db_backup.isar");
+        await isar.copyToFile("${dir.path}/db_backup.isar");
 
         ga.File fileToUpload = ga.File();
         DateTime now = DateTime.now();
