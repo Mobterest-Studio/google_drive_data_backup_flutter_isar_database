@@ -45,6 +45,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  String fileId = ""; //this refers to the id given to the file created on google drive
   final clientId = "";
 
   @override
@@ -85,8 +86,15 @@ class _HomeState extends State<Home> {
 
         final drive = ga.DriveApi(client!);
 
-        await drive.files.create(fileToUpload,
+         ga.File x  = await drive.files.create(fileToUpload,
             uploadMedia: ga.Media(file.openRead(), file.lengthSync()));
+
+        if (x.id != null) {
+          print(x.id!); // this refers to the id of the file created in Google Drive
+          setState(() {
+            fileId = x.id!; //we save it in a variable called fileId
+          });
+        }
 
         if (file.existsSync()) {
           file.deleteSync();
@@ -125,7 +133,8 @@ class _HomeState extends State<Home> {
         final dir = await getApplicationDocumentsDirectory();
      
         var drive = ga.DriveApi(client!);       
-
+        
+        //here we get the file that we uploaded to Google Drive using its id. 
         final downloadedFile = await drive.files.get(fileId,
             downloadOptions: ga.DownloadOptions.fullMedia) as Media;
     
