@@ -104,4 +104,61 @@ class _HomeState extends State<Home> {
       }
     }
   }
+ 
+  
+  //Import back database to the app from Google Drive
+  downloadFromGoogleDrive() async {
+    try { 
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        clientId: clientId,
+ 
+        scopes: <String>[ga.DriveApi.driveFileScope],
+      );
+     
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+    
+      if (googleUser != null) {
+        final auth.AuthClient? client =
+             await googleSignIn.authenticatedClient();
+       
+        final dir = await getApplicationDocumentsDirectory();
+     
+        var drive = ga.DriveApi(client!);       
+
+        final downloadedFile = await drive.files.get(fileId,
+            downloadOptions: ga.DownloadOptions.fullMedia) as Media;
+    
+        final List<List<int>> chunks = [];
+
+        await for (List<int> chunk in downloadedFile.stream) {
+          chunks.add(chunk);
+        }
+        
+        final List<int> bytes = chunks.expand((chunk) => chunk).toList();
+        
+        //first close isar database
+        await isar.close();
+
+        final dbFile =
+            await fa.File('${dir.path}/database_you_want_to_import.isar').writeAsBytes(bytes);
+        final dbPath = p.join(dir.path, 'default.isar');
+
+        if (await dbFile.exists()) {
+          await dbFile.copy(dbPath);
+        }
+ 
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text("Failed to log in")));
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
+  }
 }
