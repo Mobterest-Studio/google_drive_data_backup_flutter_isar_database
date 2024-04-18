@@ -132,10 +132,14 @@ class _HomeState extends State<Home> {
        
         final dir = await getApplicationDocumentsDirectory();
      
-        var drive = ga.DriveApi(client!);       
+        var drive = ga.DriveApi(client!); 
+
+         final listOfFiles = await drive.files.list(q: "db_backup.isar");
+
+         String _fileId = listOfFiles.files![0].id      
         
         //here we get the file that we uploaded to Google Drive using its id. 
-        final downloadedFile = await drive.files.get(fileId,
+        final downloadedFile = await drive.files.get(_fileId,
             downloadOptions: ga.DownloadOptions.fullMedia) as Media;
     
         final List<List<int>> chunks = [];
